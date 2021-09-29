@@ -1,12 +1,12 @@
 FROM golang:1.16.4
-RUN mkdir /gm-tool-backend
+RUN mkdir /gm-tool-global-ver
 
-ADD . /gm-tool-backend
+ADD . /gm-tool-global-ver
 
-WORKDIR /gm-tool-backend
+WORKDIR /gm-tool-global-ver
 
 RUN go build -o main
 
-RUN mkdir /gm-tool-backend/storage
+RUN mkdir /gm-tool-global-ver/storage
 
-CMD ["/gm-tool-backend/main"]
+CMD ["/gm-tool-global-ver/main"]
