@@ -21,11 +21,6 @@ func AddNewsDetail(w http.ResponseWriter, r *http.Request) {
 		panic(err.Error())
 	}
 
-	stmt2, err := db.Prepare("INSERT INTO t_news_v2_detail(news_id, lang, title, banner, banner_checksum, content, content_checksum) VALUES (?,?,?,?,?,?,?)")
-	if err != nil {
-		panic(err.Error())
-	}
-
 	stmt3, err := db.Prepare("INSERT INTO t_news_v2(name, release_date, type) VALUES (?,?,?)")
 	if err != nil {
 		panic(err.Error())
@@ -33,29 +28,20 @@ func AddNewsDetail(w http.ResponseWriter, r *http.Request) {
 
 	// news_id := r.Form.Get("news_id")
 	// lang := r.Form.Get("lang")
-	titleEN := r.Form.Get("titleEN")
-	titleIN := r.Form.Get("titleIN")
+	title := r.Form.Get("title")
 	news_type := r.Form.Get("type")
-	EN := "en"
-	IN := "in"
 	banner, banner_checksum, err := CheckorUpload(r, "banner")
 	if err != nil {
 		panic(err)
 	}
-	contentEN, content_checksumEN, err := UploadFile(r, "contentEN", "Test", EN)
+	content, content_checksum, err := UploadFile(r, "contentEN", "Test")
 	if err != nil {
 		panic(err)
 	}
-	contentIN, content_checksumIN, err := UploadFile(r, "contentIN", "Test", IN)
-	if err != nil {
-		panic(err)
-	}
-	contentEN = EN + "/" + contentEN
-	contentIN = IN + "/" + contentIN
 
 	release_date := r.Form.Get("release_date")
 
-	_, err = stmt3.Exec(titleEN, release_date, news_type)
+	_, err = stmt3.Exec(title, release_date, news_type)
 	if err != nil {
 		panic(err)
 	}
@@ -77,12 +63,7 @@ func AddNewsDetail(w http.ResponseWriter, r *http.Request) {
 
 	news_id := newsId.News_id
 
-	_, err = stmt.Exec(news_id, EN, titleEN, banner, banner_checksum, contentEN, content_checksumEN)
-	if err != nil {
-		panic(err)
-	}
-
-	_, err = stmt2.Exec(news_id, IN, titleIN, banner, banner_checksum, contentIN, content_checksumIN)
+	_, err = stmt.Exec(news_id, title, banner, banner_checksum, content, content_checksum)
 	if err != nil {
 		panic(err)
 	}
@@ -102,7 +83,7 @@ func GetNewsDetails(w http.ResponseWriter, r *http.Request) {
 
 	for result.Next() {
 		var detail model.News_detail
-		err := result.Scan(&detail.News_id, &detail.Lang, &detail.Title, &detail.Banner, &detail.Banner_checksum, &detail.Content, &detail.Content_checksum)
+		err := result.Scan(&detail.News_id, &detail.Title, &detail.Banner, &detail.Banner_checksum, &detail.Content, &detail.Content_checksum)
 		if err != nil {
 			panic(err.Error())
 		}
@@ -126,7 +107,7 @@ func GetNewsDetail(w http.ResponseWriter, r *http.Request) {
 
 	for result.Next() {
 		var detail model.News_detail
-		err := result.Scan(&detail.News_id, &detail.Lang, &detail.Title, &detail.Banner, &detail.Banner_checksum, &detail.Content, &detail.Content_checksum)
+		err := result.Scan(&detail.News_id, &detail.Title, &detail.Banner, &detail.Banner_checksum, &detail.Content, &detail.Content_checksum)
 		if err != nil {
 			panic(err.Error())
 		}

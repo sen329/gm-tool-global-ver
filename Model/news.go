@@ -10,7 +10,6 @@ type News struct {
 
 type News_detail struct {
 	News_id          int64  `json:"news_id"`
-	Lang             string `json:"lang"`
 	Title            string `json:"title"`
 	Banner           string `json:"banner"`
 	Banner_checksum  string `json:"banner_checksum"`
