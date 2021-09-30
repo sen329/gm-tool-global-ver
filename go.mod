@@ -3,6 +3,7 @@ module github.com/sen329/test5
 go 1.16
 
 require (
+	github.com/aws/aws-sdk-go v1.40.52 // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
 	github.com/go-sql-driver/mysql v1.6.0 // indirect
 	github.com/gorilla/handlers v1.5.1
@@ -11,4 +12,6 @@ require (
 	github.com/rs/cors v1.8.0 // indirect
 	github.com/secsy/goftp v0.0.0-20200609142545-aa2de14babf4 // indirect
 	golang.org/x/crypto v0.0.0-20210505212654-3497b51f5e64 // indirect
+	golang.org/x/net v0.0.0-20210929193557-e81a3d93ecf6 // indirect
+	golang.org/x/text v0.3.7 // indirect
 )

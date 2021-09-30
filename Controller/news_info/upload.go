@@ -5,21 +5,38 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"io"
+	"log"
 	"math/rand"
 	"net/http"
+	"os"
 	"path/filepath"
 	"strings"
 
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/joho/godotenv"
 	controller "github.com/sen329/test5/Controller"
 	model "github.com/sen329/test5/Model"
 )
 
 const latin = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz01233456789"
 
+func goDotEnvVariable(key string) string {
+
+	// load .env file
+	err := godotenv.Load(".env")
+
+	if err != nil {
+		log.Fatalf("Error loading .env file")
+	}
+
+	return os.Getenv(key)
+}
+
 func UploadFile(r *http.Request, form string, paths ...string) (string, string, error) {
-	connect := controller.FTP()
-	defer connect.Close()
+	// connect := controller.FTP()
+	// defer connect.Close()
 
 	err := r.ParseMultipartForm(10 * 1024 * 1024)
 	if err != nil {
@@ -45,27 +62,52 @@ func UploadFile(r *http.Request, form string, paths ...string) (string, string, 
 	fileExtension := strings.Split(fileHandler.Filename, ".")
 	newRandName := buffer + "." + fileExtension[len(fileExtension)-1]
 
-	// Get Path
-	fileLocation, err := connect.Getwd()
-	if err != nil {
-		panic(err.Error())
-	}
-	fileLocation = filepath.Join(fileLocation, "pub")
+	sess := controller.ConnectAws()
+	uploader := s3manager.NewUploader(sess)
+	// fileLocation := "d3dm8r2p7qllvu.cloudfront.net"
+
+	// // Get Path
+	// fileLocation, err := connect.Getwd()
+	// if err != nil {
+	// 	panic(err.Error())
+	// }
+	fileLocation := "testfolder"
 	for _, path := range paths {
 		fileLocation = filepath.Join(fileLocation, path)
 	}
 	fileLocation = filepath.Join(fileLocation, newRandName)
 
-	// Re Open file
+	// // Re Open file
 	reopenFile, err := fileHandler.Open()
 	if err != nil {
 		panic(err.Error())
 	}
 	defer reopenFile.Close()
 
-	// Save file to FTP
-	err = connect.Store(fileLocation, reopenFile)
+	// // Save file to FTP
+	// err = connect.Store(fileLocation, reopenFile)
+	// if err != nil {
+	// 	panic(err.Error())
+	// }
+
+	myBucket := goDotEnvVariable("BUCKET_NAME")
+
+	_, err = uploader.Upload(&s3manager.UploadInput{
+		Bucket: aws.String(myBucket),
+
+		// Can also use the `filepath` standard library package to modify the
+		// filename as need for an S3 object key. Such as turning absolute path
+		// to a relative path.
+		Key: aws.String(fileLocation),
+
+		// The file to be uploaded. io.ReadSeeker is preferred as the Uploader
+		// will be able to optimize memory when uploading large content. io.Reader
+		// is supported, but will require buffering of the reader's bytes for
+		// each part.
+		Body: reopenFile,
+	})
 	if err != nil {
+		// Print the error and exit.
 		panic(err.Error())
 	}
 	return newRandName, checksum, nil
@@ -116,7 +158,7 @@ func CheckorUpload(r *http.Request, form string) (string, string, error) {
 	getFromForm := r.Form.Get(form)
 	var checksum string
 	if len(getFromForm) == 0 {
-		getFromForm, checksum, err := UploadFile(r, form, "Test")
+		getFromForm, checksum, err := UploadFile(r, form)
 		if err != nil {
 			panic(err)
 		}
