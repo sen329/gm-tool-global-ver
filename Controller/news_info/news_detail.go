@@ -21,6 +21,11 @@ func AddNewsDetail(w http.ResponseWriter, r *http.Request) {
 		panic(err.Error())
 	}
 
+	stmt2, err := db.Prepare("INSERT INTO t_news_v2_detail(news_id, lang, title, banner, banner_checksum, content, content_checksum) VALUES (?,?,?,?,?,?,?)")
+	if err != nil {
+		panic(err.Error())
+	}
+
 	stmt3, err := db.Prepare("INSERT INTO t_news_v2(name, release_date, type) VALUES (?,?,?)")
 	if err != nil {
 		panic(err.Error())
@@ -28,20 +33,30 @@ func AddNewsDetail(w http.ResponseWriter, r *http.Request) {
 
 	// news_id := r.Form.Get("news_id")
 	// lang := r.Form.Get("lang")
-	title := r.Form.Get("title")
+	titleEN := r.Form.Get("titleEN")
+	titleINTL := r.Form.Get("titleINTL")
 	news_type := r.Form.Get("type")
+	language := r.Form.Get("lang")
+	EN := "en"
+	INTL := language
 	banner, banner_checksum, err := CheckorUpload(r, "banner")
 	if err != nil {
 		panic(err)
 	}
-	content, content_checksum, err := UploadFile(r, "content", "Test")
+	contentEN, content_checksumEN, err := UploadFile(r, "contentEN", "NewsInfo", EN)
 	if err != nil {
 		panic(err)
 	}
+	contentINTL, content_checksumINTL, err := UploadFile(r, "contentINTL", "NewsInfo", INTL)
+	if err != nil {
+		panic(err)
+	}
+	contentEN = EN + "/" + contentEN
+	contentINTL = INTL + "/" + contentINTL
 
 	release_date := r.Form.Get("release_date")
 
-	_, err = stmt3.Exec(title, release_date, news_type)
+	_, err = stmt3.Exec(titleEN, release_date, news_type)
 	if err != nil {
 		panic(err)
 	}
@@ -63,7 +78,12 @@ func AddNewsDetail(w http.ResponseWriter, r *http.Request) {
 
 	news_id := newsId.News_id
 
-	_, err = stmt.Exec(news_id, title, banner, banner_checksum, content, content_checksum)
+	_, err = stmt.Exec(news_id, EN, titleEN, banner, banner_checksum, contentEN, content_checksumEN)
+	if err != nil {
+		panic(err)
+	}
+
+	_, err = stmt2.Exec(news_id, INTL, titleINTL, banner, banner_checksum, contentINTL, content_checksumINTL)
 	if err != nil {
 		panic(err)
 	}
