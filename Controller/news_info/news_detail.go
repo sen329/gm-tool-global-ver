@@ -38,7 +38,6 @@ func AddNewsDetail(w http.ResponseWriter, r *http.Request) {
 	news_type := r.Form.Get("type")
 	language := r.Form.Get("lang")
 	EN := "en"
-	INTL := language
 	banner, banner_checksum, err := CheckorUpload(r, "banner")
 	if err != nil {
 		panic(err)
@@ -47,12 +46,12 @@ func AddNewsDetail(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		panic(err)
 	}
-	contentINTL, content_checksumINTL, err := UploadFile(r, "contentINTL", "NewsInfo", INTL)
+	contentINTL, content_checksumINTL, err := UploadFile(r, "contentINTL", "NewsInfo", language)
 	if err != nil {
 		panic(err)
 	}
 	contentEN = EN + "/" + contentEN
-	contentINTL = INTL + "/" + contentINTL
+	contentINTL = language + "/" + contentINTL
 
 	release_date := r.Form.Get("release_date")
 
@@ -83,7 +82,7 @@ func AddNewsDetail(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	_, err = stmt2.Exec(news_id, INTL, titleINTL, banner, banner_checksum, contentINTL, content_checksumINTL)
+	_, err = stmt2.Exec(news_id, language, titleINTL, banner, banner_checksum, contentINTL, content_checksumINTL)
 	if err != nil {
 		panic(err)
 	}
