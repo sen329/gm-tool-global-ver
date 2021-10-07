@@ -92,6 +92,8 @@ func UploadFile(r *http.Request, form string, paths ...string) (string, string, 
 
 	myBucket := goDotEnvVariable("BUCKET_NAME")
 
+	ACL := goDotEnvVariable("ACL")
+
 	_, err = uploader.Upload(&s3manager.UploadInput{
 		Bucket: aws.String(myBucket),
 
@@ -99,6 +101,8 @@ func UploadFile(r *http.Request, form string, paths ...string) (string, string, 
 		// filename as need for an S3 object key. Such as turning absolute path
 		// to a relative path.
 		Key: aws.String(fileLocation),
+
+		ACL: aws.String(ACL),
 
 		// The file to be uploaded. io.ReadSeeker is preferred as the Uploader
 		// will be able to optimize memory when uploading large content. io.Reader
